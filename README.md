@@ -1,5 +1,9 @@
 # Sub-Hub
 
+原文地址：
+https://www.nodeseek.com/post-349175-1
+https://github.com/shiyi11yi/Sub-Hub
+
 - Sub-Hub 是一个基于 Cloudflare Workers 的代理节点订阅管理系统。它提供了一个直观的 Web 界面，让您可以轻松管理多个订阅和节点
 - 基于Cloudflare Worker 搭建，不需要借助VPS进行部署
 - 支持原始格式，BASE64格式，Surge格式、Clash格式（内置模板，需要使用自己的规则可以按需修改）
