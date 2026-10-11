@@ -16,6 +16,7 @@ https://github.com/shiyi11yi/Sub-Hub
   - 新增支持了HTTP/HTTPS代理协议（Surge、Clash及原始/Base64格式均可使用）
   - 订阅路径最小长度由5个字符放宽为3个字符
   - 新增wrangler.toml，可在Cloudflare后台连接GitHub仓库，通过Workers Builds实现push自动部署（D1绑定database_id需按自己的实际值修改）
+  - 原始格式及/v2ray输出中，HTTP(S)节点会自动附加一行v2rayn://内部格式，v2rayN/v2rayNG更新订阅时可直接导入HTTP节点（其他客户端不受影响，仍解析http://行）
 
 ## 2025.09.12更新：
 

@@ -331,8 +331,8 @@ export default {
               headers: { 'Content-Type': 'text/plain; charset=utf-8' },
             });
           } else if (pathname.endsWith('/v2ray')) {
-            // 返回 Base64 编码格式，排除 snell 节点，包括 VLESS 节点
-            const filteredContent = filterSnellNodes(content);
+            // 返回 Base64 编码格式，排除 snell 节点，包括 VLESS 节点；http(s)节点附加v2rayN内部格式行
+            const filteredContent = appendV2rayNInnerUris(filterSnellNodes(content));
             const base64Content = safeBase64Encode(filteredContent);
             
             return new Response(base64Content, {
@@ -346,8 +346,8 @@ export default {
             });
           }
           
-          // 返回普通订阅内容，排除 snell 节点
-          const filteredContent = filterSnellNodes(content);
+          // 返回普通订阅内容，排除 snell 节点；http(s)节点附加v2rayN内部格式行
+          const filteredContent = appendV2rayNInnerUris(filterSnellNodes(content));
           return new Response(filteredContent, {
             headers: { 'Content-Type': 'text/plain; charset=utf-8' },
           });
@@ -2695,28 +2695,7 @@ function parseHttpLink(httpLink) {
     const nodeName = url.hash ? decodeURIComponent(url.hash.substring(1)) : '未命名节点';
 
     // 处理认证信息（与SOCKS相同，兼容明文和Base64编码的username:password）
-    let username = '', password = '';
-    if (url.username) {
-      const decodedUsername = safeDecodeURIComponent(url.username);
-      try {
-        const decoded = safeBase64Decode(decodedUsername);
-        if (decoded.includes(':')) {
-          const parts = decoded.split(':');
-          username = parts[0];
-          password = parts[1];
-        } else {
-          username = decodedUsername;
-          if (url.password) {
-            password = safeDecodeURIComponent(url.password);
-          }
-        }
-      } catch (e) {
-        username = decodedUsername;
-        if (url.password) {
-          password = safeDecodeURIComponent(url.password);
-        }
-      }
-    }
+    const { username, password } = extractHttpAuth(url);
 
     // 构建Surge格式（https对应Surge的https策略类型，即启用TLS的HTTP代理）
     const configParts = [
@@ -2732,6 +2711,87 @@ function parseHttpLink(httpLink) {
   } catch {
     return null;
   }
+}
+
+// 提取HTTP(S)链接中的认证信息，兼容明文和Base64编码的username:password
+function extractHttpAuth(url) {
+  if (!url.username) return { username: '', password: '' };
+
+  const decodedUsername = safeDecodeURIComponent(url.username);
+  try {
+    const decoded = safeBase64Decode(decodedUsername);
+    if (decoded.includes(':')) {
+      const parts = decoded.split(':');
+      return { username: parts[0], password: parts[1] };
+    }
+  } catch (e) {}
+  return {
+    username: decodedUsername,
+    password: url.password ? safeDecodeURIComponent(url.password) : ''
+  };
+}
+
+// 将HTTP(S)节点转换为v2rayN内部URI格式
+// v2rayN/v2rayNG没有http(s)://分享链接的解析器，但更新订阅时会额外解析v2rayn://内部格式
+// （InnerFmt），其中EConfigType.HTTP可直接承载HTTP代理节点
+function buildV2rayNInnerUri(httpLink) {
+  const lowerLink = httpLink.toLowerCase();
+  if (!lowerLink.startsWith(NODE_TYPES.HTTP) && !lowerLink.startsWith(NODE_TYPES.HTTPS)) return null;
+
+  try {
+    const url = new URL(httpLink);
+    if (!url.hostname) return null;
+
+    const isTls = lowerLink.startsWith(NODE_TYPES.HTTPS);
+    const port = parseInt(url.port || (isTls ? '443' : '80'));
+    if (!port) return null;
+
+    const profile = {
+      ConfigVersion: 4,
+      ConfigType: 10, // EConfigType.HTTP
+      Remarks: url.hash ? decodeURIComponent(url.hash.substring(1)) : '未命名节点',
+      Address: url.hostname,
+      Port: port
+    };
+
+    const { username, password } = extractHttpAuth(url);
+    if (username) {
+      profile.Username = username;
+      profile.Password = password;
+    }
+
+    if (isTls) {
+      profile.StreamSecurity = 'tls';
+      profile.AllowInsecure = 'true';
+    }
+
+    // v2rayn://{configtype小写}/{url-safe base64(无padding)的ProfileItem JSON}
+    const encoded = safeBase64Encode(JSON.stringify(profile))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+    return `v2rayn://http/${encoded}`;
+  } catch {
+    return null;
+  }
+}
+
+// 为订阅输出中的http(s)节点附加v2rayN内部格式行，原行保留（其他客户端可正常解析http://）
+function appendV2rayNInnerUris(content) {
+  if (!content?.trim()) return content;
+
+  const output = [];
+  for (const line of content.split(/\r?\n/)) {
+    const trimmedLine = line.trim();
+    output.push(line);
+
+    const lowerLine = trimmedLine.toLowerCase();
+    if (lowerLine.startsWith(NODE_TYPES.HTTP) || lowerLine.startsWith(NODE_TYPES.HTTPS)) {
+      const innerUri = buildV2rayNInnerUri(trimmedLine);
+      if (innerUri) output.push(innerUri);
+    }
+  }
+  return output.join('\n');
 }
 
 // 添加更新订阅信息的函数
