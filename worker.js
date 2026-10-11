@@ -1,6 +1,6 @@
 // 通用的路径验证和节点名称提取函数
 function validateSubscriptionPath(path) {
-  return /^[a-z0-9-]{5,50}$/.test(path);
+  return /^[a-z0-9-]{3,50}$/.test(path);
 }
 
 // 节点类型常量定义
@@ -10,6 +10,8 @@ const NODE_TYPES = {
   TROJAN: 'trojan://',
   VLESS: 'vless://',
   SOCKS: 'socks://',
+  HTTP: 'http://',
+  HTTPS: 'https://',
   HYSTERIA2: 'hysteria2://',
   TUIC: 'tuic://',
   SNELL: 'snell,'
@@ -35,7 +37,7 @@ function extractNodeName(nodeLink) {
     return '未命名节点';
   }
 
-  // 处理其他使用哈希标记名称的链接类型（SS、TROJAN、VLESS、SOCKS、Hysteria2、TUIC等）
+  // 处理其他使用哈希标记名称的链接类型（SS、TROJAN、VLESS、SOCKS、HTTP(S)、Hysteria2、TUIC等）
   const hashIndex = nodeLink.indexOf('#');
   if (hashIndex !== -1) {
     try {
@@ -1106,8 +1108,8 @@ function serveAdminPanel(env, adminPath) {
               </div>
               <div class="mb-3">
                 <label class="form-label">订阅路径 <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="path" required pattern="^[a-z0-9-]+$" minlength="5" maxlength="50">
-                <div class="form-text">路径只能包含小写字母、数字和连字符，长度在5-50个字符之间</div>
+                <input type="text" class="form-control" name="path" required pattern="^[a-z0-9-]+$" minlength="3" maxlength="50">
+                <div class="form-text">路径只能包含小写字母、数字和连字符，长度在3-50个字符之间</div>
                 <div class="path-error text-danger"></div>
               </div>
             </form>
@@ -1133,7 +1135,7 @@ function serveAdminPanel(env, adminPath) {
               <input type="hidden" name="subscriptionPath" value="">
               <div class="mb-3">
                 <label class="form-label">节点内容 <span class="text-danger">*</span></label>
-                <textarea class="form-control" name="content" rows="6" required placeholder="请输入节点内容，支持以下格式：&#10;1. ss://... &#10;2. vless://...（除Surge） &#10;3. vmess://... &#10;4. trojan://... &#10;5. socks://... &#10;6. hysteria2://... &#10;7. tuic://... &#10;8. snell格式（仅Surge）&#10;9. Base64编码格式"></textarea>
+                <textarea class="form-control" name="content" rows="6" required placeholder="请输入节点内容，支持以下格式：&#10;1. ss://... &#10;2. vless://...（除Surge） &#10;3. vmess://... &#10;4. trojan://... &#10;5. socks://... &#10;6. http(s)://... &#10;7. hysteria2://... &#10;8. tuic://... &#10;9. snell格式（仅Surge）&#10;10. Base64编码格式"></textarea>
               </div>
             </form>
           </div>
@@ -1166,7 +1168,7 @@ function serveAdminPanel(env, adminPath) {
               <div class="mb-3">
                 <label class="form-label">订阅路径 <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" name="path" required>
-                <div class="form-text">路径只能包含小写字母、数字和连字符，长度在5-50个字符之间</div>
+                <div class="form-text">路径只能包含小写字母、数字和连字符，长度在3-50个字符之间</div>
                 <div class="path-error text-danger"></div>
               </div>
             </form>
@@ -1198,7 +1200,7 @@ function serveAdminPanel(env, adminPath) {
               <input type="hidden" name="nodeId" value="">
               <div class="mb-3">
                 <label class="form-label">节点内容 <span class="text-danger">*</span></label>
-                <textarea class="form-control" name="content" rows="6" required placeholder="请输入节点内容，支持以下格式：&#10;1. ss://... &#10;2. vless://...（除Surge） &#10;3. vmess://... &#10;4. trojan://... &#10;5. socks://... &#10;6. hysteria2://... &#10;7. tuic://... &#10;8. snell格式（仅Surge）&#10;9. Base64编码格式"></textarea>
+                <textarea class="form-control" name="content" rows="6" required placeholder="请输入节点内容，支持以下格式：&#10;1. ss://... &#10;2. vless://...（除Surge） &#10;3. vmess://... &#10;4. trojan://... &#10;5. socks://... &#10;6. http(s)://... &#10;7. hysteria2://... &#10;8. tuic://... &#10;9. snell格式（仅Surge）&#10;10. Base64编码格式"></textarea>
               </div>
             </form>
           </div>
@@ -1713,7 +1715,7 @@ function serveAdminPanel(env, adminPath) {
           return '未命名节点';
         }
 
-        // 处理其他使用哈希标记名称的链接类型（SS、TROJAN、VLESS、SOCKS、Hysteria2、TUIC等）
+        // 处理其他使用哈希标记名称的链接类型（SS、TROJAN、VLESS、SOCKS、HTTP(S)、Hysteria2、TUIC等）
         const hashIndex = nodeLink.indexOf('#');
         if (hashIndex !== -1) {
           try {
@@ -1732,6 +1734,8 @@ function serveAdminPanel(env, adminPath) {
         TROJAN: 'trojan://',
         VLESS: 'vless://',
         SOCKS: 'socks://',
+        HTTP: 'http://',
+        HTTPS: 'https://',
         HYSTERIA2: 'hysteria2://',
         TUIC: 'tuic://',
         SNELL: 'snell,'
@@ -2147,7 +2151,7 @@ function serveAdminPanel(env, adminPath) {
 
       // 表单验证工具函数（复用后端实现）
       function validateSubscriptionPathFrontend(path) {
-        return /^[a-z0-9-]{5,50}$/.test(path);
+        return /^[a-z0-9-]{3,50}$/.test(path);
       }
 
       // 添加复制到剪贴板函数
@@ -2396,7 +2400,7 @@ async function handleCreateNode(request, env, subscriptionPath) {
   // 验证节点类型
   const lowerContent = originalLink.toLowerCase();
   const isSnell = lowerContent.includes('=') && lowerContent.includes('snell,');
-  if (!['ss://', 'vmess://', 'trojan://', 'vless://', 'socks://', 'hysteria2://', 'tuic://'].some(prefix => lowerContent.startsWith(prefix)) && !isSnell) {
+  if (!['ss://', 'vmess://', 'trojan://', 'vless://', 'socks://', 'http://', 'https://', 'hysteria2://', 'tuic://'].some(prefix => lowerContent.startsWith(prefix)) && !isSnell) {
     return createErrorResponse('不支持的节点格式', 400);
   }
   
@@ -2673,6 +2677,63 @@ function parseSocksLink(socksLink) {
   }
 }
 
+// 解析HTTP(S)链接为Surge格式
+function parseHttpLink(httpLink) {
+  const lowerLink = httpLink.toLowerCase();
+  if (!lowerLink.startsWith(NODE_TYPES.HTTP) && !lowerLink.startsWith(NODE_TYPES.HTTPS)) return null;
+
+  try {
+    // 处理标准格式：http://username:password@server:port#name
+    // 或者 http://base64encoded@server:port#name，https://表示启用TLS
+    const url = new URL(httpLink);
+    if (!url.hostname) return null;
+
+    const isTls = lowerLink.startsWith(NODE_TYPES.HTTPS);
+    const port = url.port || (isTls ? '443' : '80');
+
+    // 提取节点名称
+    const nodeName = url.hash ? decodeURIComponent(url.hash.substring(1)) : '未命名节点';
+
+    // 处理认证信息（与SOCKS相同，兼容明文和Base64编码的username:password）
+    let username = '', password = '';
+    if (url.username) {
+      const decodedUsername = safeDecodeURIComponent(url.username);
+      try {
+        const decoded = safeBase64Decode(decodedUsername);
+        if (decoded.includes(':')) {
+          const parts = decoded.split(':');
+          username = parts[0];
+          password = parts[1];
+        } else {
+          username = decodedUsername;
+          if (url.password) {
+            password = safeDecodeURIComponent(url.password);
+          }
+        }
+      } catch (e) {
+        username = decodedUsername;
+        if (url.password) {
+          password = safeDecodeURIComponent(url.password);
+        }
+      }
+    }
+
+    // 构建Surge格式（https对应Surge的https策略类型，即启用TLS的HTTP代理）
+    const configParts = [
+      `${nodeName} = ${isTls ? 'https' : 'http'}`,
+      url.hostname,
+      port
+    ];
+
+    if (username) configParts.push(username);
+    if (password) configParts.push(password);
+
+    return configParts.join(', ');
+  } catch {
+    return null;
+  }
+}
+
 // 添加更新订阅信息的函数
 async function handleUpdateSubscriptionInfo(env, path, data) {
   const name = data.name?.trim();
@@ -2790,6 +2851,8 @@ function convertToSurge(content) {
     [NODE_TYPES.VMESS, parseVmessLink],
     [NODE_TYPES.TROJAN, parseTrojanLink],
     [NODE_TYPES.SOCKS, parseSocksLink],
+    [NODE_TYPES.HTTP, parseHttpLink],
+    [NODE_TYPES.HTTPS, parseHttpLink],
     [NODE_TYPES.HYSTERIA2, parseHysteria2ToSurge],
     [NODE_TYPES.TUIC, parseTuicToSurge]
   ]);
@@ -2977,6 +3040,11 @@ function parseNodeToClash(nodeLink) {
   // 解析 SOCKS 节点
   if (lowerLink.startsWith(NODE_TYPES.SOCKS)) {
     return parseSocksToClash(nodeLink);
+  }
+  
+  // 解析 HTTP(S) 节点
+  if (lowerLink.startsWith(NODE_TYPES.HTTP) || lowerLink.startsWith(NODE_TYPES.HTTPS)) {
+    return parseHttpToClash(nodeLink);
   }
   
   // 解析 Hysteria2 节点
@@ -3259,6 +3327,64 @@ function parseSocksToClash(socksLink) {
             username = parts[0];
             password = parts[1];
           }
+        } else {
+          username = decodedUsername;
+          if (url.password) {
+            password = safeDecodeURIComponent(url.password);
+          }
+        }
+      } catch (e) {
+        username = decodedUsername;
+        if (url.password) {
+          password = safeDecodeURIComponent(url.password);
+        }
+      }
+      
+      if (username) node.username = username;
+      if (password) node.password = password;
+    }
+    
+    return node;
+  } catch {
+    return null;
+  }
+}
+
+// 解析 HTTP(S) 节点为 Clash 格式
+function parseHttpToClash(httpLink) {
+  const lowerLink = httpLink.toLowerCase();
+  if (!lowerLink.startsWith(NODE_TYPES.HTTP) && !lowerLink.startsWith(NODE_TYPES.HTTPS)) return null;
+  
+  try {
+    // 处理标准格式：http://username:password@server:port#name，https://表示启用TLS
+    const url = new URL(httpLink);
+    if (!url.hostname) return null;
+    
+    const isTls = lowerLink.startsWith(NODE_TYPES.HTTPS);
+    
+    const node = {
+      name: url.hash ? decodeURIComponent(url.hash.substring(1)) : '未命名节点',
+      type: 'http',
+      server: url.hostname,
+      port: parseInt(url.port || (isTls ? '443' : '80'))
+    };
+    
+    if (isTls) {
+      node.tls = true;
+      node['skip-cert-verify'] = true;
+    }
+    
+    // 处理认证信息（与SOCKS相同，兼容明文和Base64编码的username:password）
+    if (url.username) {
+      let username = '', password = '';
+      const decodedUsername = safeDecodeURIComponent(url.username);
+      
+      try {
+        const decoded = safeBase64Decode(decodedUsername);
+        if (decoded.includes(':')) {
+          const parts = decoded.split(':');
+          username = parts[0];
+          password = parts[1];
         } else {
           username = decodedUsername;
           if (url.password) {

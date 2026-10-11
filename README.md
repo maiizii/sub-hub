@@ -62,6 +62,7 @@ UPDATE nodes SET enabled = 1 WHERE enabled IS NULL;
   - Trojan
   - VLESS（除 Surge 外）
   - SOCKS5
+  - HTTP/HTTPS
   - Snell（仅 Surge）
   - Hysteria2
   - Tuic
@@ -181,7 +182,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 1. 登录管理面板
 2. 点击"添加订阅"按钮
-3. 输入订阅名称和路径（路径只能包含小写字母、数字和连字符）
+3. 输入订阅名称和路径（路径只能包含小写字母、数字和连字符，长度在3-50个字符之间）
 4. 点击"创建"按钮
 
 ### 管理节点

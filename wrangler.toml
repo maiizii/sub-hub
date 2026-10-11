@@ -1,0 +1,17 @@
+name = "sub-hub"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# 保留 dashboard 中已配置、但未写入本文件的明文变量（如 ADMIN_PASSWORD），
+# 避免 wrangler deploy 时将其删除。敏感值建议在 dashboard 中改用"密钥"类型保存。
+keep_vars = true
+
+# D1 数据库绑定（database_id 在 D1 控制台 → 数据库概览页复制）
+[[d1_databases]]
+binding = "DB"
+database_name = "sub-hub"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+ADMIN_PATH = "hub"
+ADMIN_USERNAME = "admin"
