@@ -10,7 +10,7 @@ keep_vars = true
 [[d1_databases]]
 binding = "DB"
 database_name = "sub-hub"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "372fd198-8080-4efa-acb7-6efe5c4f1a4e"
 
 [vars]
 ADMIN_PATH = "hub"
